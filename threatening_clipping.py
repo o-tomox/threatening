@@ -7,6 +7,8 @@
 
 from probability import get_by_probability
 
+from setting import mplus, bokutachi, kirieji, tanuki, seto
+
 
 class Clipping(object):
 	# 一つ一つの文字のサイズ
@@ -15,9 +17,9 @@ class Clipping(object):
 
 	""" 新聞記事の切り抜きのクラス """
 	def __init__(self, character):
-		self.character = character
 		self.clippingsize = self._calculate_clippingsize()
 		self.background = Background()
+		self.character_style = CharacterStyle(character, self.background.backcolor)
 
 	""" 切り抜きの実際のサイズを計算する """
 	def _calculate_clippingsize(self):
@@ -33,7 +35,7 @@ class Clipping(object):
 		self.height = Clipping.CLIPPING_HEIGHT - height_gap
 
 	def __str__(self):
-		return "<Clipping chara:{0} w:{1} h:{2} back:{3}>".format(self.character.encode("utf-8"), self.width, self.height, self.background)
+		return "<Clipping w:{0} h:{1} back:{2} character:{3}>".format(self.width, self.height, self.background, self.character_style)
 
 
 class Background(object):
@@ -60,13 +62,30 @@ class Background(object):
 		return "<Background color:{0} linecolor:{1} linewidth:{2}>".format(self.backcolor, self.stripelinecolor, self.stripelinewidth)
 
 
-
 class CharacterStyle(object):
 	""" 文字スタイルのクラス """
-	def __init__(self, character, background):
-		self.size = None
-		self.font = None
-		self.color = None
+	def __init__(self, character, backgroundcolor):
+		self.character = character
+
+		# 文字サイズを決める
+		textsize_probability = {150: 10, 200: 10, 250: 10, 300: 10}
+		self.size = get_by_probability(textsize_probability)
+
+		# フォントを決める
+		font_probability = {mplus: 10, bokutachi: 10, kirieji: 10, tanuki: 10, seto: 10}
+		self.font = get_by_probability(font_probability)
+
+		# 文字色を決める
+		# 濃い背景の場合だけ白っぽい文字色を許す
+		# 普通は黒色
+		if backgroundcolor[0] < 150:
+			textcolor_probability = {(0, 0, 0): 10, (255, 255, 255): 10, (239, 239, 239): 10}
+			self.color = get_by_probability(textcolor_probability)
+		else:
+			self.color = (0, 0, 0)
+
+	def __str__(self):
+		return "<CharacterStyle chara:{0} size:{1} font:{2} color:{3}>".format(self.character.encode("utf-8"), self.size, self.font, self.color)
 		
 
 
