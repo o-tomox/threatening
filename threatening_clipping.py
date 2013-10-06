@@ -20,7 +20,13 @@ class Clipping(object):
 		self._calculate_clippingsize()
 		self.background = Background()
 		self.character_style = CharacterStyle(character, self.background.backcolor)
-		self.press = Press()
+		do_press = get_by_probability({True: 20, False: 10})
+		if do_press:
+			self.press = Press()
+			self.press_slip = self.press.calculate_slip(self.width)
+		else:
+			self.press = None
+			self.press_slip = 0
 
 	""" 切り抜きの実際のサイズを計算する """
 	def _calculate_clippingsize(self):
@@ -36,7 +42,7 @@ class Clipping(object):
 		self.height = Clipping.CLIPPING_HEIGHT - height_gap
 
 	def __str__(self):
-		return "<Clipping w:{0} h:{1} back:{2} character:{3} press:{4}>".format(self.width, self.height, self.background, self.character_style, self.press)
+		return "<Clipping w:{0} h:{1} back:{2} character:{3} press:{4} slip:{5}>".format(self.width, self.height, self.background, self.character_style, self.press, self.press_slip)
 
 
 class Background(object):
@@ -105,6 +111,13 @@ class Press(object):
 		# 圧縮率を決める
 		ratio_probability = {0.6: 10, 0.7: 10, 0.8: 10}
 		self.ratio = get_by_probability(ratio_probability)
+
+	""" 圧縮によるずれを計算する """
+	def calculate_slip(self, width):
+		if self.direction == Press.VER:
+			return 0
+		else:
+			return int(width * (1 - self.ratio)) / 2
 
 	def __str__(self):
 		return "<Press dir:{0} ratio:{1}>".format(self.direction, self.ratio)

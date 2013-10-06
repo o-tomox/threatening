@@ -62,7 +62,7 @@ class ClippingStyle(object):
 		slip = self._calculate_slip()
 
 		# 貼り付ける座標を決める
-		self.x = ClippingStyle.total_x + slip[0]
+		self.x = ClippingStyle.total_x + slip[0] - clipping.press_slip
 		self.y = ClippingStyle.total_y + slip[1]
 
 		# xとyを更新する
@@ -74,7 +74,7 @@ class ClippingStyle(object):
 			ClippingStyle.total_x = Letter.HOR_MARGIN + 30
 			ClippingStyle.total_y += Clipping.CLIPPING_HEIGHT + Letter.VER_MARGIN
 		else:
-			ClippingStyle.total_x += clipping.width + Letter.HOR_MARGIN
+			ClippingStyle.total_x += clipping.width + Letter.HOR_MARGIN - clipping.press_slip * 2
 
 
 	""" 切り抜きをxy方向にずらす量を計算する """
