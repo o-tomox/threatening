@@ -20,6 +20,7 @@ class Clipping(object):
 		self.clippingsize = self._calculate_clippingsize()
 		self.background = Background()
 		self.character_style = CharacterStyle(character, self.background.backcolor)
+		self.press = Press()
 
 	""" 切り抜きの実際のサイズを計算する """
 	def _calculate_clippingsize(self):
@@ -35,7 +36,7 @@ class Clipping(object):
 		self.height = Clipping.CLIPPING_HEIGHT - height_gap
 
 	def __str__(self):
-		return "<Clipping w:{0} h:{1} back:{2} character:{3}>".format(self.width, self.height, self.background, self.character_style)
+		return "<Clipping w:{0} h:{1} back:{2} character:{3} press:{4}>".format(self.width, self.height, self.background, self.character_style, self.press)
 
 
 class Background(object):
@@ -86,6 +87,27 @@ class CharacterStyle(object):
 
 	def __str__(self):
 		return "<CharacterStyle chara:{0} size:{1} font:{2} color:{3}>".format(self.character.encode("utf-8"), self.size, self.font, self.color)
+
+
+class Press(object):
+	# 圧縮する方向
+	# 垂直方向
+	VER = 0
+	# 水平方向
+	HOR = 1
+
+	""" 切り抜きの圧縮のクラス """
+	def __init__(self):
+		# 圧縮方向を決める
+		direction_probability = {Press.VER: 10, Press.HOR: 10}
+		self.direction = get_by_probability(direction_probability)
+
+		# 圧縮率を決める
+		ratio_probability = {0.6: 10, 0.7: 10, 0.8: 10}
+		self.ratio = get_by_probability(ratio_probability)
+
+	def __str__(self):
+		return "<Press dir:{0} ratio:{1}>".format(self.direction, self.ratio)
 		
 
 
