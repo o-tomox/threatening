@@ -17,7 +17,7 @@ class Clipping(object):
 
 	""" 新聞記事の切り抜きのクラス """
 	def __init__(self, character):
-		self.clippingsize = self._calculate_clippingsize()
+		self._calculate_clippingsize()
 		self.background = Background()
 		self.character_style = CharacterStyle(character, self.background.backcolor)
 		self.press = Press()
