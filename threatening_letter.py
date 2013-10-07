@@ -15,10 +15,11 @@ class Letter(object):
 	VER_MARGIN = 30
 
 	""" 脅迫状のクラス """
-	def __init__(self, characters):
+	def __init__(self, characters, background):
 		width_num = max([len(line) for line in characters])
 		height_num = len(characters)
 
+		self.background = background
 		self._calculate_lettersize(width_num, height_num)
 		self._make_clippings(characters)
 		self._calculate_true_lettersize()
@@ -42,7 +43,7 @@ class Letter(object):
 		self.letterwidth = ClippingStyle.max_width + Letter.HOR_MARGIN
 
 	def __str__(self):
-		return "<Letter w:{0} h:{1} clipping:{2}>".format(self.letterwidth, self.letterheight, self.clipping_styles)
+		return "<Letter w:{0} h:{1} back:{2} clipping:{3}>".format(self.letterwidth, self.letterheight, self.background, self.clipping_styles)
 
 
 class ClippingStyle(object):

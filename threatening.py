@@ -13,7 +13,7 @@ def makeletter(text, background, filename):
 	characters = [[character for character in line.rstrip()] for line in text.split("\n")]
 
 	# 脅迫状インスタンスを生成する
-	letter = Letter(characters)
+	letter = Letter(characters, background)
 
 	print letter
 
