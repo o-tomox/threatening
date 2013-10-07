@@ -5,6 +5,10 @@
 （新聞記事の切り抜き）
 """
 
+import Image
+import ImageDraw
+import ImageFont
+
 from probability import get_by_probability
 
 from setting import mplus, bokutachi, kirieji, tanuki, seto
@@ -21,12 +25,8 @@ class Clipping(object):
 		self.background = Background()
 		self.character_style = CharacterStyle(character, self.background.backcolor)
 		do_press = get_by_probability({True: 20, False: 10})
-		if do_press:
-			self.press = Press()
-			self.press_slip = self.press.calculate_slip(self.width)
-		else:
-			self.press = None
-			self.press_slip = 0
+		self.press = Press(do_press)
+		self.press_slip = self.press.calculate_slip(self.width)
 
 	""" 切り抜きの実際のサイズを計算する """
 	def _calculate_clippingsize(self):
@@ -40,6 +40,22 @@ class Clipping(object):
 		# 実際のサイズ
 		self.width = Clipping.CLIPPING_WIDTH - width_gap
 		self.height = Clipping.CLIPPING_HEIGHT - height_gap
+
+	""" 切り抜きを作る """
+	def make(self):
+		img = Image.new("RGBA", (self.width, self.height), self.background.backcolor)
+		draw = ImageDraw.Draw(img)
+
+		# ストライプ柄を描画する
+		self.background.drawstripe(draw, self.width, self.height)
+
+		# 文字を描画する
+		self.character_style.drawtext(img, draw)
+
+		# 圧縮する
+		img = self.press.press(img, self.width, self.height)
+
+		return img
 
 	def __str__(self):
 		return "<Clipping w:{0} h:{1} back:{2} character:{3} press:{4} slip:{5}>".format(self.width, self.height, self.background, self.character_style, self.press, self.press_slip)
@@ -60,10 +76,23 @@ class Background(object):
 			self.stripelinecolor = None
 			self.stripelinewidth = None
 		else:
+			direction_probability = {"ver": 10, "hor": 10}
 			linecolor_probability = {(87,87,87): 10, (128,128,128): 10, (169,169,169): 10, (210, 210, 210): 10}
 			linewidth_probability = {2: 10, 5: 10, 8: 10}
+			self.direction = get_by_probability(direction_probability)
 			self.stripelinecolor = get_by_probability(linecolor_probability)
 			self.stripelinewidth = get_by_probability(linewidth_probability)
+
+	""" ストライプ柄を描画 """
+	def drawstripe(self, draw, width, height):
+		if self.stripelinecolor is not None:
+			# ストライプ方向で変える
+			if self.direction == "ver":
+				for x in xrange(10, width, 20):
+					draw.line(((x, 0), (x, height)), self.stripelinecolor, self.stripelinewidth)
+			elif self.direction == "hor":
+				for y in xrange(10, height, 20):
+					draw.line(((0, y), (width, y)), self.stripelinecolor, self.stripelinewidth)
 
 	def __str__(self):
 		return "<Background color:{0} linecolor:{1} linewidth:{2}>".format(self.backcolor, self.stripelinecolor, self.stripelinewidth)
@@ -91,6 +120,20 @@ class CharacterStyle(object):
 		else:
 			self.color = (0, 0, 0)
 
+	""" 文字を描画する """
+	def drawtext(self, img, draw):
+		# フォントを設定
+		draw.font = ImageFont.truetype(self.font, self.size, encoding="unicode")
+
+		# 文字を真ん中に配置する
+		img_size = img.size
+		text_size = draw.font.getsize(self.character)
+
+		position = [(p - q) / 2.0 for p, q in zip(img_size, text_size)]
+
+		# 文字を書く
+		draw.text(position, self.character, fill=self.color)
+
 	def __str__(self):
 		return "<CharacterStyle chara:{0} size:{1} font:{2} color:{3}>".format(self.character.encode("utf-8"), self.size, self.font, self.color)
 
@@ -103,21 +146,48 @@ class Press(object):
 	HOR = 1
 
 	""" 切り抜きの圧縮のクラス """
-	def __init__(self):
-		# 圧縮方向を決める
-		direction_probability = {Press.VER: 10, Press.HOR: 10}
-		self.direction = get_by_probability(direction_probability)
+	def __init__(self, do):
+		self.do = do
+		if do:
+			# 圧縮方向を決める
+			direction_probability = {Press.VER: 10, Press.HOR: 10}
+			self.direction = get_by_probability(direction_probability)
 
-		# 圧縮率を決める
-		ratio_probability = {0.6: 10, 0.7: 10, 0.8: 10}
-		self.ratio = get_by_probability(ratio_probability)
+			# 圧縮率を決める
+			ratio_probability = {0.6: 10, 0.7: 10, 0.8: 10}
+			self.ratio = get_by_probability(ratio_probability)
 
 	""" 圧縮によるずれを計算する """
 	def calculate_slip(self, width):
-		if self.direction == Press.VER:
+		if not self.do or self.direction == Press.VER:
 			return 0
 		else:
 			return int(width * (1 - self.ratio)) / 2
+
+	def press(self, img, width, height):
+		if self.do:
+			# 圧縮後のサイズ
+			new_size = [width, height]
+
+			# 圧縮方向の違い
+			if self.direction == Press.VER:
+				new_size[1] = int(new_size[1] * self.ratio)
+			else:
+				new_size[0] = int(new_size[0] * self.ratio)
+
+			# リサイズによる圧縮
+			img = img.resize(new_size)
+
+			# 新しいイメージ
+			new_img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+
+			# もともとのサイズと同じになるように圧縮したイメージを真ん中に貼り付ける
+			position = tuple([(p - q) / 2 for p, q in zip((width, height), new_size)])
+			new_img.paste(img, position)
+
+			return new_img
+		else:
+			return img
 
 	def __str__(self):
 		return "<Press dir:{0} ratio:{1}>".format(self.direction, self.ratio)

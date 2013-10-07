@@ -4,6 +4,8 @@
 脅迫状を作成するためのクラス
 """
 
+import Image
+
 from threatening_clipping import Clipping
 
 from probability import get_by_probability
@@ -42,6 +44,19 @@ class Letter(object):
 	def _calculate_true_lettersize(self):
 		self.letterwidth = ClippingStyle.max_width + Letter.HOR_MARGIN
 
+	"""" 脅迫状を実際に作成する """
+	def make(self, filename):
+		# 背景を作る
+		letter_img = Image.new("RGB", (self.letterwidth, self.letterheight), self.background)
+
+		# 切り抜きを作って，貼り付けていく
+		for clipping_style in self.clipping_styles:
+			clipping_style_img = clipping_style.make()
+			letter_img.paste(clipping_style_img, (clipping_style.x, clipping_style.y), clipping_style_img.split()[3])
+
+		# 保存する
+		letter_img.save(filename)
+
 	def __str__(self):
 		return "<Letter w:{0} h:{1} back:{2} clipping:{3}>".format(self.letterwidth, self.letterheight, self.background, self.clipping_styles)
 
@@ -75,7 +90,7 @@ class ClippingStyle(object):
 		# そうでなければ，xを加算する
 		if next_is_newline:
 			# まず，最大幅の確認をする
-			self._calculate_max_width(ClippingStyle.total_x)
+			self._calculate_max_width(ClippingStyle.total_x + clipping.width)
 			ClippingStyle.total_x = Letter.HOR_MARGIN + 30
 			ClippingStyle.total_y += Clipping.CLIPPING_HEIGHT + Letter.VER_MARGIN
 		else:
@@ -120,6 +135,12 @@ class ClippingStyle(object):
 	def _calculate_max_width(self, width):
 		if ClippingStyle.max_width < width:
 			ClippingStyle.max_width = width
+
+	""" 回転まで含めた切り抜きを作成する """
+	def make(self):
+		clipping_img = self.clipping.make()
+		clipping_style_img = clipping_img.rotate(self.rotate, expand=1)
+		return clipping_style_img
 
 	def __str__(self):
 		return "<ClippingStyle clip:{0} rotate:{1} x:{2} y:{3}".format(self.clipping, self.rotate, self.x, self.y)

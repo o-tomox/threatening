@@ -15,8 +15,10 @@ def makeletter(text, background, filename):
 	# 脅迫状インスタンスを生成する
 	letter = Letter(characters, background)
 
-	print letter
+	# 脅迫状を作成する	
+	letter.make(filename)
 
+	# print letter
 
 
 if __name__ == '__main__':
