@@ -21,6 +21,7 @@ class Letter(object):
 
 		self._calculate_lettersize(width_num, height_num)
 		self._make_clippings(characters)
+		self._calculate_true_lettersize()
 
 	""" 脅迫状のサイズ（仮）を計算する """
 	def _calculate_lettersize(self, width_num, height_num):
@@ -29,16 +30,19 @@ class Letter(object):
 
 	""" 各文字用の切り抜きを作る """
 	def _make_clippings(self, characters):
-		clipping_styles = []
+		self.clipping_styles = []
 		for h, lines in enumerate(characters):
 			for w, character in enumerate(lines):
 				clipping = Clipping(character)
 				clipping_style = ClippingStyle(clipping, w == len(lines) - 1)
-				clipping_styles.append(clipping_style)
-				print clipping_style
+				self.clipping_styles.append(clipping_style)
+
+	""" 脅迫状の真のサイズを計算する """
+	def _calculate_true_lettersize(self):
+		self.letterwidth = ClippingStyle.max_width + Letter.HOR_MARGIN
 
 	def __str__(self):
-		return "<Letter w:{0} h:{1}>".format(self.letterwidth, self.letterheight)
+		return "<Letter w:{0} h:{1} clipping:{2}>".format(self.letterwidth, self.letterheight, self.clipping_styles)
 
 
 class ClippingStyle(object):
