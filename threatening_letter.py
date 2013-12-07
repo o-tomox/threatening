@@ -33,6 +33,8 @@ class Letter(object):
 
 	""" 各文字用の切り抜きを作る """
 	def _make_clippings(self, characters):
+		# ClippingStyleを初期化しておく
+		ClippingStyle.init()
 		self.clipping_styles = []
 		for h, lines in enumerate(characters):
 			for w, character in enumerate(lines):
@@ -58,18 +60,10 @@ class Letter(object):
 		letter_img.save(filename)
 
 	def __str__(self):
-		return "<Letter w:{0} h:{1} back:{2} clipping:{3}>".format(self.letterwidth, self.letterheight, self.background, self.clipping_styles)
+		return "<Letter w:{0} h:{1} back:{2} clipping:{3}>".format(self.letterwidth, self.letterheight, self.background, ",".join(map(str, self.clipping_styles)))
 
 
 class ClippingStyle(object):
-	# 座標
-	total_x = Letter.HOR_MARGIN + 30
-	total_y = Letter.VER_MARGIN
-	# 幅の最大値
-	max_width = 0
-	# ずらす量の候補
-	slip_probability = None
-
 	""" 新聞記事の貼り付け位置などのクラス """
 	def __init__(self, clipping, next_is_newline):
 		self.clipping = clipping
@@ -144,6 +138,17 @@ class ClippingStyle(object):
 
 	def __str__(self):
 		return "<ClippingStyle clip:{0} rotate:{1} x:{2} y:{3}".format(self.clipping, self.rotate, self.x, self.y)
+
+	""" このクラス自体の初期化 """
+	@classmethod
+	def init(ClippingStyle):
+		# 座標
+		ClippingStyle.total_x = Letter.HOR_MARGIN + 30
+		ClippingStyle.total_y = Letter.VER_MARGIN
+		# 幅の最大値
+		ClippingStyle.max_width = 0
+		# ずらす量の候補
+		ClippingStyle.slip_probability = None
 
 
 
