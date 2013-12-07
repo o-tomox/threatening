@@ -156,6 +156,8 @@ class Press(object):
 			# 圧縮率を決める
 			ratio_probability = {0.6: 10, 0.7: 10, 0.8: 10}
 			self.ratio = get_by_probability(ratio_probability)
+		else:
+			self.direction = self.ratio = None
 
 	""" 圧縮によるずれを計算する """
 	def calculate_slip(self, width):
