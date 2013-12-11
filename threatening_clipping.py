@@ -11,7 +11,7 @@ import ImageFont
 
 from probability import get_by_probability
 
-from setting import mplus, bokutachi, kirieji, tanuki, seto
+from setting import mplus, bokutachi, kiloji, tanuki, seto
 
 
 class Clipping(object):
@@ -108,7 +108,7 @@ class CharacterStyle(object):
 		self.size = get_by_probability(textsize_probability)
 
 		# フォントを決める
-		font_probability = {mplus: 10, bokutachi: 10, kirieji: 10, tanuki: 10, seto: 10}
+		font_probability = {mplus: 10, bokutachi: 10, kiloji: 10, tanuki: 10, seto: 10}
 		self.font = get_by_probability(font_probability)
 
 		# 文字色を決める
