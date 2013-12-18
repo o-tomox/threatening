@@ -10,7 +10,10 @@ from threatening_letter import Letter
 # 脅迫状を作成する	
 def makeletter(text, background, filename):
 	# 文章を行毎，一文字に分ける
-	characters = [[character for character in line.rstrip()] for line in text.split("\n")]
+	characters = [[character for character in line.rstrip()] for line in text.split("\n")  if line.strip() != ""]
+
+	if len(characters) == 0:
+		return False
 
 	# 脅迫状インスタンスを生成する
 	letter = Letter(characters, background)
@@ -18,7 +21,7 @@ def makeletter(text, background, filename):
 	# 脅迫状を作成する	
 	letter.make(filename)
 
-	# print letter
+	return True
 
 
 if __name__ == '__main__':
